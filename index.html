@@ -97,10 +97,10 @@ body{
   font-size:16px;letter-spacing:7px;text-transform:uppercase;color:var(--dark);
 }
 .hero-name{
-  font-family:'Great Vibes',cursive;font-size:100px;line-height:.95;
+  font-family:'Great Vibes',cursive;font-size:clamp(72px,22vw,100px);line-height:1.05;
   background:linear-gradient(135deg,#FFFFF0,#F0D080 40%,#FFFFF0);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  margin-bottom:10px;
+  margin-bottom:10px;padding:0 16px;
   filter:drop-shadow(0 2px 18px rgba(0,0,0,.45));
   transform:translateY(30px);opacity:0;
 }
@@ -271,35 +271,34 @@ section{padding:64px 26px;}
 .amp{font-style:italic;font-size:15px;color:var(--accent);opacity:.75;}
 .flor{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--accent);opacity:.35;letter-spacing:8px;}
 
-/* ── GALERIA DIAGONAL X — autoplay ── */
-#sgal{padding:0;}
+/* ── GALERIA S-WAVE — autoplay ── */
+#sgal{padding:36px 0 24px;}
 .gal-frame{
-  overflow:hidden;display:flex;flex-direction:column;
-  background:var(--bg);
+  display:flex;flex-direction:column;background:transparent;
 }
 .gal-label{
   position:relative;z-index:2;flex-shrink:0;
   font-family:'Cormorant Garamond',serif;font-style:italic;
   font-size:11px;letter-spacing:5px;text-transform:uppercase;
-  color:var(--accent);text-align:center;opacity:.75;padding-top:24px;
+  color:var(--accent);text-align:center;opacity:.75;padding-bottom:16px;
 }
 .gal-canvas{
-  height:72dvh;position:relative;overflow:hidden;
+  height:64dvh;position:relative;overflow:visible;
 }
 .gal-item{
   position:absolute;inset:0;
   display:flex;align-items:center;justify-content:center;
-  padding:16px 24px;will-change:transform,opacity;
+  will-change:transform,opacity;overflow:visible;
 }
 .gal-item img{
-  width:100%;max-height:68dvh;
-  object-fit:cover;border-radius:20px;display:block;
-  box-shadow:0 16px 48px rgba(166,124,0,0.22);
+  width:84%;max-height:60dvh;
+  object-fit:cover;border-radius:24px;display:block;
+  box-shadow:0 20px 60px rgba(166,124,0,0.26),0 4px 18px rgba(0,0,0,0.10);
   border:1px solid rgba(201,168,76,0.30);
 }
 .gal-dots{
   display:flex;justify-content:center;gap:10px;
-  padding:14px 0 20px;flex-shrink:0;
+  padding:18px 0 8px;flex-shrink:0;
 }
 .gal-dot{
   width:6px;height:6px;border-radius:50%;
@@ -684,7 +683,7 @@ footer .fd{
     </div>
   </section>
 
-  <!-- GALERIA DIAGONAL X — autoplay -->
+  <!-- GALERIA S-WAVE — autoplay -->
   <section id="sgal">
     <div class="gal-frame">
       <div class="gal-label">Galeria de Fotos</div>
@@ -693,14 +692,12 @@ footer .fd{
         <div class="gal-item"><img src="./foto2.png" alt="Alejandra" loading="lazy"></div>
         <div class="gal-item"><img src="./foto3.png" alt="Alejandra" loading="lazy"></div>
         <div class="gal-item"><img src="./foto4.png" alt="Alejandra" loading="lazy"></div>
-        <div class="gal-item"><img src="./foto5.png" alt="Alejandra" loading="lazy"></div>
       </div>
       <div class="gal-dots">
         <div class="gal-dot" id="dot0"></div>
         <div class="gal-dot" id="dot1"></div>
         <div class="gal-dot" id="dot2"></div>
         <div class="gal-dot" id="dot3"></div>
-        <div class="gal-dot" id="dot4"></div>
       </div>
     </div>
   </section>
@@ -903,18 +900,18 @@ function initItinerary(){
   });
 }
 
-/* ── GALERIA DIAGONAL X — autoplay loop ── */
+/* ── GALERIA S-WAVE — autoplay loop ── */
 function initGallery(){
   const items=gsap.utils.toArray('.gal-item');
   const n=items.length;
   const dots=document.querySelectorAll('.gal-dot');
-  const inDur=0.85, hold=2.0, outDur=0.75;
+  const inDur=1.1, hold=2.2, outDur=0.95;
   const seg=inDur+hold+outDur;
 
-  /* posición inicial: cada imagen en su esquina de entrada */
+  /* posición inicial fuera de pantalla — parte superior con offset lateral */
   items.forEach((item,i)=>{
     const dir=i%2===0?1:-1;
-    gsap.set(item,{xPercent:dir*115,yPercent:58,opacity:0});
+    gsap.set(item,{xPercent:dir*-22,yPercent:-115,opacity:0,scale:0.88,rotation:dir*5});
   });
 
   function setDot(i){
@@ -928,16 +925,33 @@ function initGallery(){
     const t=i*seg;
 
     tl
-      /* activar punto indicador */
       .call(setDot,[i],t)
-      /* entrada diagonal */
-      .to(item,{xPercent:0,yPercent:0,opacity:1,
-                duration:inDur,ease:'power2.out'},t)
-      /* salida por diagonal opuesta */
-      .to(item,{xPercent:-dir*115,yPercent:-58,opacity:0,
-                duration:outDur,ease:'power2.in'},t+inDur+hold)
-      /* reset a posición de entrada para el próximo loop */
-      .set(item,{xPercent:dir*115,yPercent:58},t+seg-0.01);
+      /* ENTRADA — primera curva de la S: swing lateral */
+      .to(item,{
+        xPercent:dir*16,yPercent:-22,
+        opacity:1,scale:0.97,rotation:dir*2,
+        duration:inDur*0.42,ease:'power1.out'
+      },t)
+      /* segunda curva: desliza al centro */
+      .to(item,{
+        xPercent:0,yPercent:0,
+        scale:1,rotation:0,
+        duration:inDur*0.58,ease:'power2.out'
+      },t+inDur*0.42)
+      /* SALIDA — primera curva inversa */
+      .to(item,{
+        xPercent:dir*-16,yPercent:22,
+        scale:0.97,rotation:dir*-2,
+        duration:outDur*0.42,ease:'power1.in'
+      },t+inDur+hold)
+      /* segunda curva: sale por abajo con offset opuesto */
+      .to(item,{
+        xPercent:dir*22,yPercent:115,
+        opacity:0,scale:0.88,rotation:dir*-5,
+        duration:outDur*0.58,ease:'power2.in'
+      },t+inDur+hold+outDur*0.42)
+      /* reset para el loop */
+      .set(item,{xPercent:dir*-22,yPercent:-115,rotation:dir*5},t+seg-0.01);
   });
 
   setDot(0);
